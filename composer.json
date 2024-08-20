@@ -1,0 +1,19 @@
+{
+    "name": "idaaser/oneid-jwt-auth-php",
+    "description": "oneid-jwt-auth-php",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "oneid\\jwt_auth\\": "src/"
+        },
+        "files": ["src/Constant.php"]
+    },
+    "authors": [
+        {
+            "name": "tencent-meeting-oneid"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.10"
+    }
+}
