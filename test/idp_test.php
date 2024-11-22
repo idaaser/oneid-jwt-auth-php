@@ -14,24 +14,20 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPwlvSsvsxHHKkRFeMvrBPvfGio2TL
 EOF;
 
 $issuer = "oneid-jinrruan";
-$loginUrl = "https://oauth2.eid-6.account.tencentcs.com/v1/sso/jwtp/1102878596482998272/1151383032381308928/kit/{app_type}";
+$loginUrl = "https://oauth2.account.tencent.com/v1/sso/jwtp/1102878596482998272/1151383032381308928/kit/{app_type}?q=1234";
 $jwtConfig = new JwtConfig($primaryKey, $issuer, $loginUrl);
 
-$builder = new UserInfoBuilder("user_id-123");
+$builder = new UserInfoBuilder("user_id-123", "jinrruan");
 $extension = array("code"=>"1234", "state"=>"4321", "otherParam"=>"other");
-$userInfo = $builder->setName("jinrruan")
-    ->setPreferredUsername("haha")
+$userInfo = $builder->setUsername("haha")
     ->setMobile("13007149***")
     ->setEmail("123@qq.com")
-    ->setExtension($extension)->build();
+    ->setCustomAttributes($extension)->build();
 
 echo JwtAuth::generateTokenWithUserInfo($jwtConfig, $userInfo).PHP_EOL;
 
 $param = array("code"=>"12+3@?4", "state"=>"43+21", "otherParam"=>"other");
 echo JwtAuth::generateLoginUrlWithUserInfo($jwtConfig, $userInfo, App_Tencent_Meeting, $param).PHP_EOL;
 
-$claims = array("name"=>"jinrruan", "preferredUsername"=>"haha", "mobile"=>"13007149***", "email"=>"123@qq.com");
-echo JwtAuth::generateTokenWithClaims($jwtConfig, $claims).PHP_EOL;
-
-echo JwtAuth::generateLoginUrlWithClaims($jwtConfig, $claims, App_Tencent_Docs, $param).PHP_EOL;
-
+$jwtSigner = new JwtConfig($primaryKey, $issuer, $loginUrl, "jwt");
+echo JwtAuth::generateLoginUrlWithUserInfo($jwtSigner, $userInfo, App_Tencent_Meeting, $param).PHP_EOL;

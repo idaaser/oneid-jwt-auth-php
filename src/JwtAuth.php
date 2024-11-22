@@ -15,7 +15,7 @@ class JwtAuth{
         return self::generateTokenWithClaims($jwtConfig, $userInfo->asClaims());
     }
 
-    static function generateTokenWithClaims($jwtConfig, $claims): string{
+    private static function generateTokenWithClaims($jwtConfig, $claims): string{
         // 1、参数校验
         if (!$jwtConfig instanceof JwtConfig){
             throw new InvalidArgumentException("invalid jwtConfig");
@@ -27,6 +27,7 @@ class JwtAuth{
         // 2、payload封装
         $payload = $jwtConfig->asClaim();
         $payload += $claims;
+
         // 3、使用私钥生成签名
         return JWT::encode($payload, $jwtConfig->privateKey, DEFAULT_ALGORITHM);
     }
@@ -41,7 +42,7 @@ class JwtAuth{
         return self::generateLoginUrlWithClaims($jwtConfig, $userInfo->asClaims(), $app, $params);
     }
 
-    static function generateLoginUrlWithClaims($jwtConfig, $claims, $app=null, $params=null): string{
+    private static function generateLoginUrlWithClaims($jwtConfig, $claims, $app=null, $params=null): string{
         // 1、生成token
         $token = self::generateTokenWithClaims($jwtConfig, $claims);
 
@@ -58,20 +59,18 @@ class JwtAuth{
             $baseUrl = str_replace(APP_TYPE_PARAM, $app, $baseUrl);
         }
         // 2.2、参数部分
-        $queryParams = array($jwtConfig->tokenParam=>$token);
-        $pos = strpos($baseUrl, "?");
-        if ($pos !== false){
-            parse_str(substr($baseUrl, $pos + 1), $existParams);
-            $baseUrl = substr($baseUrl, $pos);
-            $queryParams = array_merge($queryParams, $existParams);
-        }
+        $queryParams = array($jwtConfig->tokenKey=>$token);
+        $parsedURL = parse_url($baseUrl);
+        parse_str($parsedURL['query'], $paramArray);
+        $queryParams = array_merge($queryParams, $paramArray);
         if ($params !== null){
             if (!is_array($params)){
                 throw new InvalidArgumentException("invalid params");
             }
             $queryParams = array_merge($queryParams, $params);
         }
-        return $baseUrl."?".http_build_query($queryParams);
+        $parsedURL['query'] = http_build_query($queryParams);
+        return http_build_url($parsedURL);
     }
 }
 

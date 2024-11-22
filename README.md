@@ -27,22 +27,15 @@ $loginUrl = "https://oauth2.eid-6.account.tencentcs.com/v1/sso/jwtp/110287859648
 $jwtConfig = new JwtConfig($primaryKey, $issuer, $loginUrl);
 ```
 3. 生成免登url：
-- 通过用户信息UserInfo生成(UserInfo中preferredUsername、email、mobile三个属性至少存在一个)
+- 通过用户信息UserInfo生成(UserInfo中userId与name为必传参数，preferredUsername、email、mobile三个属性至少存在一个)
 ```php
-$builder = new UserInfoBuilder("user_id-123");
+$builder = new UserInfoBuilder("user_id-123", "jinrruan");
 $extension = array("code"=>"1234", "state"=>"4321", "otherParam"=>"other");
-$userInfo = $builder->setName("jinrruan")
-    ->setPreferredUsername("haha")
+$userInfo = $builder->setPreferredUsername("haha")
     ->setMobile("13007149***")
     ->setEmail("123@qq.com")
-    ->setExtension($extension)->build();
+    ->setCustomAttributes($extension)->build();
 
 $param = array("code"=>"12+3@?4", "state"=>"43+21", "otherParam"=>"other");
 echo JwtAuth::generateLoginUrlWithUserInfo($jwtConfig, $userInfo, App_Tencent_Meeting, $param).PHP_EOL;
-```
-- 通过自定义claims生成
-```php
-$claims = array("name"=>"jinrruan", "preferredUsername"=>"haha", "mobile"=>"13007149***", "email"=>"123@qq.com");
-
-echo JwtAuth::generateLoginUrlWithClaims($jwtConfig, $claims, App_Tencent_Docs, $param).PHP_EOL;
 ```

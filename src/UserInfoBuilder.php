@@ -4,20 +4,14 @@ namespace oneid\jwt_auth;
 class UserInfoBuilder {
     var $userInfo;
 
-    function __construct($userId)
+    function __construct($userId, $name)
     {
-        $this->userInfo = new UserInfo($userId);
+        $this->userInfo = new UserInfo($userId, $name);
     }
 
-    function setName($name): UserInfoBuilder
+    function setUsername($username): UserInfoBuilder
     {
-        $this->userInfo->name = $name;
-        return $this;
-    }
-
-    function setPreferredUsername($preferredUsername): UserInfoBuilder
-    {
-        $this->userInfo->preferredUsername = $preferredUsername;
+        $this->userInfo->username = $username;
         return $this;
     }
 
@@ -33,9 +27,9 @@ class UserInfoBuilder {
         return $this;
     }
 
-    function setExtension($extension): UserInfoBuilder
+    function setCustomAttributes($customAttributes): UserInfoBuilder
     {
-        $this->userInfo->extension = $extension;
+        $this->userInfo->customAttributes = $customAttributes;
         return $this;
     }
 
