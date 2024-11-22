@@ -15,7 +15,7 @@ EOF;
 
 $issuer = "oneid-jinrruan";
 $loginUrl = "https://oauth2.account.tencent.com/v1/sso/jwtp/1102878596482998272/1151383032381308928/kit/{app_type}?q=1234";
-$jwtConfig = new JwtConfig($primaryKey, $issuer, $loginUrl);
+$jwtConfig = new JwtConfig($primaryKey, $issuer, 200, $loginUrl);
 
 $builder = new UserInfoBuilder("user_id-123", "jinrruan");
 $extension = array("code"=>"1234", "state"=>"4321", "otherParam"=>"other");
@@ -29,5 +29,5 @@ echo JwtAuth::generateTokenWithUserInfo($jwtConfig, $userInfo).PHP_EOL;
 $param = array("code"=>"12+3@?4", "state"=>"43+21", "otherParam"=>"other");
 echo JwtAuth::generateLoginUrlWithUserInfo($jwtConfig, $userInfo, App_Tencent_Meeting, $param).PHP_EOL;
 
-$jwtSigner = new JwtConfig($primaryKey, $issuer, $loginUrl, "jwt");
+$jwtSigner = new JwtConfig($primaryKey, $issuer, 300, $loginUrl, "jwt");
 echo JwtAuth::generateLoginUrlWithUserInfo($jwtSigner, $userInfo, App_Tencent_Meeting, $param).PHP_EOL;
