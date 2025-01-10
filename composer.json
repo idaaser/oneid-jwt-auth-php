@@ -3,10 +3,13 @@
     "description": "oneid-jwt-auth-php",
     "type": "library",
     "autoload": {
+        "files": [
+            "src/JWTAuth/Constant.php",
+            "src/JWTAuth/util.php"
+        ],
         "psr-4": {
             "oneid\\jwt_auth\\": "src/"
-        },
-        "files": ["src/Constant.php"]
+        }
     },
     "authors": [
         {
@@ -16,6 +19,8 @@
     "require": {
         "jakeasmith/http_build_url": "^1",
         "firebase/php-jwt": "^6.10",
-        "ramsey/uuid": "^4.7.6"
+        "ramsey/uuid": "^4.7.6",
+        "ext-openssl": "*",
+        "phpunit/phpunit": "^11.5"
     }
 }

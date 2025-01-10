@@ -1,5 +1,4 @@
 <?php
-//namespace oneid\jwt_auth;
 
 # 生成token的属性名称
 const CLAIM_EXPIRY = "exp";
