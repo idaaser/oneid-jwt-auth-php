@@ -9,8 +9,15 @@ use InvalidArgumentException;
 class Signer{
     var $privateKey, $issuer, $loginUrl, $tokenKey, $lifetime;
 
-    function __construct($privateKey, $issuer, $loginUrl, $lifetime=TOKEN_EXPIRE_SECOND,
-                         $tokenKey=DEFAULT_TOKEN_KEY)
+    /**
+     * constructor
+     *
+     * @param string $privateKey 私钥
+     * @param string $issuer 发起登录方的应用标识
+     * @param string $loginBaseUrl OneID JWT认证源页面提供的登录链接
+     * @param int $token_lifetime 免登链接中token有效期
+     */
+    function __construct($privateKey, $issuer, $loginBaseUrl, $token_lifetime=TOKEN_EXPIRE_SECOND)
     {
         if (!isset($privateKey) || check_invalid_string($privateKey)){
             throw new InvalidArgumentException("private_key must not be empty");
@@ -24,39 +31,44 @@ class Signer{
         if (!isset($issuer) || check_invalid_string($issuer)){
             throw new InvalidArgumentException("issuer must not be empty");
         }
-        if (!isset($loginUrl) || check_invalid_string($loginUrl)){
+        if (!isset($loginBaseUrl) || check_invalid_string($loginBaseUrl)){
             throw new InvalidArgumentException("loginUrl must not be empty");
         }
 
-        $baseUrl = $loginUrl;
+        $baseUrl = $loginBaseUrl;
         if (strpos($baseUrl, APP_TYPE_PARAM) !== false){
             $baseUrl = str_replace(APP_TYPE_PARAM, "test", $baseUrl);
         }
         if (!filter_var($baseUrl, FILTER_VALIDATE_URL)) {
             throw new InvalidArgumentException("loginUrl is invalid");
         }
-        if ($lifetime <= 0 || $lifetime > 300){
+        if ($token_lifetime <= 0 || $token_lifetime > 300){
             throw new InvalidArgumentException("lifetime must be greater than 0 and less than or equal to 300 seconds");
-        }
-        if (!isset($tokenKey) || check_invalid_string($tokenKey)){
-            throw new InvalidArgumentException("tokenKey must not be empty");
         }
 
         $this->privateKey = $parsedKey;
         $this->issuer = $issuer;
-        $this->loginUrl = $loginUrl;
-        $this->tokenKey = $tokenKey;
-        $this->lifetime = $lifetime;
+        $this->loginUrl = $loginBaseUrl;
+        $this->tokenKey = DEFAULT_TOKEN_KEY;
+        $this->lifetime = $token_lifetime;
     }
 
-    public static function newSignerFromKeyFile($keyFilePath, $issuer, $loginUrl, $lifetime=TOKEN_EXPIRE_SECOND,
-                                                $tokenKey=DEFAULT_TOKEN_KEY): Signer
+    /**
+     * 初始化JWT认证签发器
+     *
+     * @param string $keyFilePath 私钥文件路径
+     * @param string $issuer 发起登录方的应用标识
+     * @param string $loginBaseUrl OneID JWT认证源页面提供的登录链接
+     * @param int $token_lifetime 免登链接中token有效期
+     * @return Signer
+     */
+    public static function newSignerFromKeyFile($keyFilePath, $issuer, $loginBaseUrl, $token_lifetime=TOKEN_EXPIRE_SECOND): Signer
     {
         $privateKeyRaw = file_get_contents($keyFilePath);
-        return new static($privateKeyRaw, $issuer, $loginUrl, $lifetime, $tokenKey);
+        return new static($privateKeyRaw, $issuer, $loginBaseUrl, $token_lifetime);
     }
 
-    public function generateToken($userInfo): string{
+    private function generateToken($userInfo): string{
         // 1、参数校验
         if (!$userInfo instanceof UserInfo){
             throw new InvalidArgumentException("invalid userInfo");
@@ -66,13 +78,22 @@ class Signer{
         return $this->generateTokenWithClaims($userInfo->asClaims());
     }
 
-    public function generateLoginURL($userInfo, $app, $params): string
+
+    /**
+     * 为指定用户创建一个免登应用的url
+     *
+     * @param UserInfo $user 免登用户的信息
+     * @param string $app 免登应用的唯一标识
+     * @param array $params 表示自定义的key/value键值对(以query param的方式追加到免登链接之后)
+     * @return string 免登链接
+     */
+    public function newLoginURL($user, $app, $params): string
     {
         if (!isset($app) || check_invalid_string($app)) {
             throw new InvalidArgumentException("issuer must not be empty");
         }
 
-        $token = $this->generateToken($userInfo);
+        $token = $this->generateToken($user);
 
         $baseUrl = $this->loginUrl;
         if (strpos($baseUrl, APP_TYPE_PARAM) !== false){
@@ -87,7 +108,11 @@ class Signer{
             if (!is_array($params)){
                 throw new InvalidArgumentException("invalid params");
             }
-            $queryParams = array_merge($queryParams, $params);
+            foreach ($params as $key => $value){
+                if (is_string($key) && $key != "" && is_string($value) && $value != "" ){
+                    $queryParams[$key] = $value;
+                }
+            }
         }
         $parsedURL['query'] = http_build_query($queryParams);
         return http_build_url($parsedURL);

@@ -28,7 +28,7 @@ class UserInfoTest extends TestCase {
 
     public function testTrimmedUserIDAndName(){
         $user = new UserInfo(" id ", "\rname\n");
-        $this->assertEquals('id', $user->userId);
+        $this->assertEquals('id', $user->id);
         $this->assertEquals('name', $user->name);
     }
 
@@ -54,12 +54,12 @@ class UserInfoTest extends TestCase {
             $user = $user->setUsername("username")
                 ->setEmail("test@test.com")
                 ->setMobile("+86 13213458923")
-                ->setCustomAttributes(array("foo" => "bar"));
+                ->setExtension(array("foo" => "bar"));
             $user->validate();
             $this->assertEquals("username", $user->username);
             $this->assertEquals("test@test.com", $user->email);
             $this->assertEquals("+86 13213458923", $user->mobile);
-            $this->assertEquals("bar", $user->customAttributes["foo"]);
+            $this->assertEquals("bar", $user->extension["foo"]);
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
